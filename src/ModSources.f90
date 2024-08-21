@@ -133,8 +133,6 @@ module ModSources
   real, allocatable :: Fang_Ion_y(:,:)   ! nEnergies, nAlts
   real, allocatable :: Fang_Ion_f(:,:)   ! nEnergies, nAlts
   real, allocatable :: Fang_Ion_Pij(:,:)
-  real :: Fang_de = 0.035
-  ! --> ALB: Should we move fang init stuff to separate Modfile
   
   !BP
   real, dimension(40,11) :: qIR_NLTE_table
