@@ -16,9 +16,9 @@ subroutine aurora(iBlock)
 
   integer, intent(in) :: iBlock
 
-  real :: alat, ped, hal, av_kev, eflx_ergs, a, b, maxi
+  real :: alat, ped, hal, av_kev, eflx_ergs, b, maxi
   real :: ion_av_kev, ion_eflx_ergs, ion_eflux, ion_avee
-  real :: Factor, temp_ED, avee, eflux, p, E0, Q0, E0i, Q0i, ai
+  real :: Factor, temp_ED, avee, eflux, p, Q0, Q0i, ai
   integer :: i, j, k, n, iAlt, iError, iED, iErr, iEnergy
   logical :: IsDone, IsTop, HasSomeAurora, UseMono, UseWave
   real :: hpi, hpi_SH
@@ -180,48 +180,29 @@ subroutine aurora(iBlock)
         else
           HemisphericPowerNorth = HemisphericPowerNorth + power
         end if
-        ! Looking at other papers (Fang et al., [2010]), a
-        ! Maxwellian is defined as:
-        ! DifferentialNumberFlux = Q0/2/E0**3 * E * exp(-E/E0),
-        ! where:
-        ! Q0 = Total Energy Flux
-        ! E0 = Characteristic Energy (0.5*avee)
-        ! E = mid-point of energy bin
-        !
 
-        Q0 = eflux
-        E0 = avee/2
-        a = Q0/2/E0**3
-
-        Q0i = ion_eflux
-        E0i = ion_avee/2
-        ai = Q0i/2/E0i**3
-
-        do n = 1, ED_N_Energies
-
-          if (IsKappaAurora) then
+        if (IsKappaAurora) then
+          do n = 1, ED_N_Energies
             ! This is a Kappa Function from Fang et al. [2010]:
-            ED_Flux(n) = a*(AuroraKappa - 1)*(AuroraKappa - 2)/ &
+            ED_Flux(n) = eflux/2/(avee/2)**3* & ! a=Q0/2/E0**3
+                         (AuroraKappa - 1)*(AuroraKappa - 2)/ &
                          (AuroraKappa**2)* &
                          ed_energies(n)* &
-                         (1 + ed_energies(n)/(AuroraKappa*E0))** &
+                         (1 + ed_energies(n)/(AuroraKappa*(avee/2)))** &
                          (-AuroraKappa - 1)
-          else
-            ! This is a Maxwellian from Fang et al. [2010]:
-            ED_flux(n) = a*ed_energies(n)*exp(-ed_energies(n)/E0)
-            ED_ion_flux(n) = ai*ed_energies(n)*exp(-ed_energies(n)/E0i)
-          end if
 
-          ED_EnergyFlux(n) = &
-            ED_flux(n)* &
-            ED_Energies(n)* &
-            ED_delta_energy(n)
-          ED_Ion_EnergyFlux(n) = &
-            ED_Ion_flux(n)* &
-            ED_Energies(n)* &
-            ED_delta_energy(n)
+            ED_EnergyFlux(n) = &
+              ED_flux(n)* &
+              ED_Energies(n)* &
+              ED_delta_energy(n)
+          end do
 
-        end do
+        else
+          ! This calls the Maxwellian from Fang et al. [2010]
+          ! And does ED_EnergyFlux=flux*energies*delta_energy
+          call calc_maxwellian(eflux, avee, ED_EnergyFlux)
+          call calc_maxwellian(ion_eflux, ion_avee, ED_Ion_EnergyFlux)
+        end if
 
       end if
 
@@ -415,6 +396,38 @@ subroutine aurora(iBlock)
   IsFirstTime(iBlock) = .false.
 
   call end_timing("Aurora")
+
+contains
+
+  subroutine calc_maxwellian(total_flux, iavg_e, max_ed_flux)
+    ! From (Fang et al., [2010]), a
+    ! Maxwellian is defined as:
+    ! DifferentialNumberFlux = Q0/2/E0**3 * E * exp(-E/E0),
+    ! where:
+    ! Q0 = Total Energy Flux
+    ! E0 = Characteristic Energy (0.5*avee)
+    ! E = mid-point of energy bin
+    !
+    ! Calculate as a * E * exp(-E/E0)
+
+    real, intent(in) :: total_flux, iavg_e
+    real, intent(out), dimension(:) :: max_ed_flux
+
+    real :: a, E0
+
+    E0 = (0.5*iavg_e)
+    a = (total_flux)/2/E0**3
+
+    do n = 1, ED_N_Energies
+      max_ed_flux(n) = a*ED_Energies(n)*exp(-ED_Energies(n)/E0)
+      ! Maxwellian_Energy-Deposition_flux
+      max_ed_flux(n) = &
+        max_ed_flux(n)* &
+        ED_Energies(n)* &
+        ED_delta_energy(n)
+    end do
+
+  end subroutine calc_maxwellian
 
 end subroutine aurora
 
