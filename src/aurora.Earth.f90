@@ -65,13 +65,16 @@ subroutine aurora(iBlock)
     ! Calculate HP from e- flux
     call calculate_HP(iBlock, HPn, HPs)
 
-    ! Set avepower
-    avepower = (HPn + HPs)/2.0
-    ! If we are only have one hemisphere or the other, assign to avepower
-    if (HPs < 0.1*HPn) avepower = HPn
-    if (HPn < 0.1*HPs) avepower = HPs
+    if (doSeparateHPI) then
+      avepower = HPn ! avepower = HP_north
+      avepower_sh = HPs ! avepower_south = HP_south
+      call MPI_Bcast(avepower_sh, 1, MPI_Real, 0, iCommGITM, ierror)
 
-    ! send out w MPI
+    else ! Average north and south together, send out avg or just NH.
+      avepower = (HPn + HPs)/2.0
+      if (HPs < 0.1*HPn) avepower = HPn
+      if (HPn < 0.1*HPs) avepower = HPs
+    end if
     call MPI_Bcast(avepower, 1, MPI_Real, 0, iCommGITM, ierror)
 
     call get_hpi(CurrentTime, Hpi, iError)
@@ -80,7 +83,7 @@ subroutine aurora(iBlock)
 
     if (doSeparateHPI) then !If DoSeparateHPIs, this is south; `ratio` is North
       call get_hpi_s(CurrentTime, Hpi_SH, iError)
-      if (ierror /= 0) call stop_gitm("Error finding HPI in southern hemisphere! Check input files.")
+      if (ierror /= 0) call stop_gitm("Error finding HPI in southern hemisphere!")
       ratio_sh = Hpi_SH/avepower_sh
     end if
 
@@ -98,11 +101,11 @@ subroutine aurora(iBlock)
       end if
       if (iDebugLevel >= 1) then
         if (doSeparateHPI) then
-          write (*, *) 'Auroral normalizing ratio: ', Hpi, avepower, ratio
+         write (*, *) 'Auroral normalizing ratios: '
+         write (*, *) 'Hpi(NH)  HPI(SH)  HPI(NH-modeled)  HPI(SH-modeled)  ratio_n  ratio_s'
+         write (*, *) Hpi, Hpi_SH, HPn, HPs, ratio, ratio_sh
         else
-          write (*, *) 'Auroral normalizing ratios: '
-          write (*, *) 'Hpi(NH)  HPI(SH)  HPI(NH-modeled)  HPI(SH-modeled)  ratio_n  ratio_s'
-          write (*, *) Hpi, Hpi_SH, HPn, HPs, ratio, ratio_sh
+         write (*, *) 'Auroral normalizing ratio: ', Hpi, avepower, ratio
         end if
       end if
 
@@ -110,7 +113,7 @@ subroutine aurora(iBlock)
     do i = 1, nLats
       do j = 1, nLons
         if (ElectronEnergyFlux(j, i) > 0.1) then
-          if (latitude(i, iBlock) < 0.0) then
+          if (latitude(i, iBlock) < 0.0 .and. DoSeparateHPI) then
             ElectronEnergyFlux(j, i) = ElectronEnergyFlux(j, i)*ratio_sh
           else
             ElectronEnergyFlux(j, i) = ElectronEnergyFlux(j, i)*ratio
