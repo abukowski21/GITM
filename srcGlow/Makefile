@@ -1,6 +1,6 @@
 include ../Makefile.def
-include ../Makefile.conf
-#include ./Makefile.DEPEND
+include ../srcMake/Makefile.conf
+-include ./Makefile.DEPEND
 #include ./Makefile.RULES
 
 MODULES = Mod_GLOW.o\
@@ -25,8 +25,8 @@ OBJECTS = \
 	vquart.o\
 	GL_library.o
 
-EXE = GLOW.exe
-SEARCH_EXTRA = -I../src 
+EXE = ${BINDIR}/GLOW.exe
+# SEARCH_EXTRA = -I../src 
 
 MYLIB = libGLOW.a
 
@@ -39,7 +39,7 @@ libGLOW.a: ${MF} ${MODULES} ${OBJECTS}
 
 MY_LIB=libUPTOGL.a
 
-LIBADD:
+LIBADD: DEPEND
 	make ${MY_LIB}
 	@echo
 	@echo ${MY_LIB} has been brought up to date.
@@ -52,10 +52,10 @@ ${MY_LIB}: ${MF} ${MODULES} ${OBJECTS}
 $OBJECTS: $MODULES
 
 
-#DEPEND:
-#	../share/Scripts/depend.pl ./ ../src/ ../share/Library/src/ ${OBJECTS} ${MODULES}
+DEPEND:
+	@perl ${SCRIPTDIR}/depend.pl  ./ ../src/ ../share/Library/src/ ${OBJECTS} ${MODULES}
 
-#GLOW: DEPEND
+GLOW: DEPEND
 	 @make ${EXE}
 #
 #

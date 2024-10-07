@@ -59,7 +59,7 @@ contains
 
     implicit none
 
-    character(len=nGitmCharLength), intent(in) :: InDir
+    character(len=*), intent(in) :: InDir
     GitmDir = InDir
 
   end subroutine GitmSetDir
@@ -315,7 +315,8 @@ contains
 
     ! First try 3DALL files:
     write(*, *) 'ls -1 '//trim(GitmDir)//'3DALL*.bin > .list_of_gitm_files 2> .gitm_err'
-    call system('ls -1 '//trim(GitmDir)//'3DALL*.bin > .list_of_gitm_files 2> .gitm_err')
+    call execute_command_line('ls -1 '//trim(GitmDir)// &
+                              '3DALL*.bin > .list_of_gitm_files 2> .gitm_err')
     nGitmFiles = 0
     open(iGitmUnit, file='.list_of_gitm_files', status='old')
     iError = 0
@@ -328,7 +329,8 @@ contains
 
     if (nGitmFiles == 0) then
       ! Second try LST files:
-      call system('ls -1 '//GitmDir//'3DLST*.bin > .list_of_gitm_files 2> .gitm_err')
+      call execute_command_line('ls -1 '//GitmDir// &
+                                '3DLST*.bin > .list_of_gitm_files 2> .gitm_err')
       nGitmFiles = 0
       open(iGitmUnit, file='.list_of_gitm_files', status='old')
       iError = 0
@@ -361,7 +363,7 @@ contains
 
   subroutine GetGitmTime(file, time)
 
-    character(len=nGitmCharLength), intent(in) :: file
+    character(len=*), intent(in) :: file
     real(Real8_), intent(out) :: time
     character(len=nGitmVarCharLength) :: Dummy
 
@@ -450,7 +452,7 @@ contains
 
   subroutine GitmReadFile(InFile, iError)
 
-    character(len=nGitmCharLength), intent(in) :: InFile
+    character(len=*), intent(in) :: InFile
     integer, intent(out) :: iError
 
     character(len=nGitmVarCharLength) :: Dummy
