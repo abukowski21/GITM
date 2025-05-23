@@ -94,7 +94,7 @@ do_tests(){
         cp $test_uam UAM.in
 
         # Run GITM, stop if error.
-        mpirun -np 4 ./GITM.exe
+        mpirun -np 4 --oversubscribe ./GITM.exe
         if [ $? -eq 0 ]; then
             printf "\n\n>>> $test_uam ran successfully! <<< \n\n"
             mv $test_uam $test_uam.success
@@ -164,6 +164,7 @@ while [[ $# -gt 0 ]]; do
 
 done
 
+lscpu
 
 do_tests
 done
