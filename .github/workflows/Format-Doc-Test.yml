@@ -78,10 +78,12 @@ jobs:
     needs: [Format, Documentation]
     steps:
       - name: macos
-        if: runner.os == macOS
-	run: echo "I am on macos! Env var is $RUNNER_OS"
-      - if runner.os != 'macos'
-	run: echo "Not macos! os is: $RUNNER_OS"
+        run:
+	  if [ "$RUNNER_OS" == "Linux" ]; then
+	    echo "I am on Linux! Env var is $RUNNER_OS"
+	  else
+	    echo "Not linux. Probably macos! os is: $RUNNER_OS"
+	  fi
       - name: Install MPI (OpenMPI)
         run: sudo apt update && sudo apt install -y libopenmpi-dev
       - name: Clone GITM repository
