@@ -78,9 +78,11 @@ jobs:
     needs: [Format, Documentation]
     steps:
       - if runner.os == 'Linux'
-        run: echo "I AM LINUX"
+        run: |
+	  echo "I AM LINUX"
       - if runner.os == 'macOS'
-        run: echo "LOOKS LIKE MAC"
+        run: |
+	  echo "LOOKS LIKE MAC"
       - name: Install MPI (OpenMPI)
         run: sudo apt update && sudo apt install -y libopenmpi-dev
       - name: Clone GITM repository
