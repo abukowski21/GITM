@@ -77,10 +77,10 @@ jobs:
     name: Run Automatic Tests
     needs: [Format, Documentation]
     steps:
-      - if runner.os == 'Linux'
+      - if: runner.os == 'Linux'
           run: |
             echo "I AM LINUX"
-      - if runner.os == 'macOS'
+      - if: runner.os == 'macOS'
           run: |
             echo "LOOKS LIKE MAC"
       - name: Install MPI (OpenMPI)
