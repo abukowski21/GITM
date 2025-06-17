@@ -77,11 +77,9 @@ jobs:
     name: Run Automatic Tests
     needs: [Format, Documentation]
     steps:
-      - name: macos run
-        if: runner.os == 'macos'
+      - if: runner.os == 'macos'
 	run: echo "I am on macos! Env var is $RUNNER_OS"
-      - name not macos
-        if runner.os != 'macos'
+      - if runner.os != 'macos'
 	run: echo "Not macos! os is: $RUNNER_OS"
       - name: Install MPI (OpenMPI)
         run: sudo apt update && sudo apt install -y libopenmpi-dev
