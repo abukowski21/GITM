@@ -78,7 +78,7 @@ jobs:
     needs: [Format, Documentation]
     steps:
       - name: macos
-        run:
+        run: |
 	  if [ "$RUNNER_OS" == "Linux" ]; then
 	    echo "I am on Linux! Env var is $RUNNER_OS"
 	  else
