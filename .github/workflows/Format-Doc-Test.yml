@@ -77,13 +77,10 @@ jobs:
     name: Run Automatic Tests
     needs: [Format, Documentation]
     steps:
-      - name: macos
-        run: |
-	  if [ "$RUNNER_OS" == "Linux" ]; then
-	    echo "I am on Linux! Env var is $RUNNER_OS"
-	  else
-	    echo "Not linux. Probably macos! os is: $RUNNER_OS"
-	  fi
+      - if runner.os == 'Linux'
+        run: echo "I AM LINUX"
+      - if runner.os == 'macOS'
+        run: echo "LOOKS LIKE MAC"
       - name: Install MPI (OpenMPI)
         run: sudo apt update && sudo apt install -y libopenmpi-dev
       - name: Clone GITM repository
