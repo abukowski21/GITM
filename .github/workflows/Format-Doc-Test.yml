@@ -77,7 +77,8 @@ jobs:
     name: Run Automatic Tests
     needs: [Format, Documentation]
     steps:
-      - if: runner.os == 'macos'
+      - name: macos
+        if: runner.os == macOS
 	run: echo "I am on macos! Env var is $RUNNER_OS"
       - if runner.os != 'macos'
 	run: echo "Not macos! os is: $RUNNER_OS"
