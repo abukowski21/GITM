@@ -70,21 +70,21 @@ jobs:
           retention-days: 31
 
   Tests:
-    runs-on: ${{ matrix.os}}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
     name: Run Automatic Tests
     needs: [Format, Documentation]
     steps:
-      - if: runner.os == 'Linux'
-        run: |
-          echo "I AM LINUX"
-      - if: runner.os == 'macOS'
-        run: |
-          echo "LOOKS LIKE MAC to meeee"
-      - name: Install MPI (OpenMPI)
+      - name: Linux install gfortran & openmpi
+        if: runner.os == 'Linux'
         run: sudo apt update && sudo apt install -y libopenmpi-dev
+      - name: macOS install gfortran & openmpi
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install gcc open-mpi
       - name: Clone GITM repository
         uses: actions/checkout@v4
       - name: Run tests in srcTests/auto_test
