@@ -15,8 +15,9 @@ jobs:
           git config user.name "GitHubActions"
           git config user.email "<>"
       - name: put today's date into version.f90 file
-        run: printf 'character(25), parameter :: GitmVersion = "%s"\n' \
-              "$$(git log -1 --date=format:'%Y%m%d' --pretty='format:%ad')" > src/.version
+        run: |
+          printf 'character(25), parameter :: GitmVersion = "%s"\n' \
+            "$$(git log -1 --date=format:'%Y%m%d' --pretty='format:%ad')" > src/.version
 
       - name: Update git
         run: |
