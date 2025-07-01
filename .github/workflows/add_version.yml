@@ -23,7 +23,7 @@ jobs:
           $NOW=& Get-Date -format yyyyMMdd
           echo "NOW=$NOW" >> $env:GITHUB_ENV
       - name: use date
-        run: printf 'character(25), parameter :: GitmVersion = %s\n' ${{env.NOW}} > src/.version2
+        run: printf 'character(25), parameter :: GitmVersion = "%s"\n' "${{env.NOW}}"" > src/.version2
 
       - name: Update git
         run: |
