@@ -14,10 +14,16 @@ jobs:
         run: |
           git config user.name "GitHubActions"
           git config user.email "<>"
-      - name: put today's date into version.f90 file
+      - name: put today's date into src/.version file
         run: |
           printf 'character(25), parameter :: GitmVersion = "%s"\n' \
             "$$(git log -1 --date=format:'%Y%m%d' --pretty='format:%ad')" > src/.version
+      - name: another date, maybe
+        run: |
+          $NOW=& Get-Date -format yyyyMMdd
+          echo "NOW=$NOW" >> $env:GITHUB_ENV
+      - name: use date
+        run: printf 'character(25), parameter :: GitmVersion = ${{env.NOW}}\n' > src/.version2
 
       - name: Update git
         run: |
