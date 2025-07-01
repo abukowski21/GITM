@@ -3,7 +3,7 @@ name: version
 jobs:
   add_version_file:
     name: Version
-    runs_on: ubuntu_latest
+    runs-on: ubuntu_latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
