@@ -1,0 +1,27 @@
+on: [push, pull_request]
+name: version
+jobs:
+  add_version_file:
+    name: Version
+    runs_on: ubuntu_latest
+    steps:
+      - name: Get current date
+        id: date
+	      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
+      - name: Configure git
+        run: |
+          git config user.name "GitHubActions"
+          git config user.email "<>"
+      - name: put today's date into version.f90 file
+        run: printf 'character(25), parameter :: GitmVersion = "%s"\n' \
+              "$$(git log -1 --date=format:'%Y%m%d' --pretty='format:%ad')" >src/.version
+
+      - name: Update git
+        run: |
+          git push
+          git push --tags
