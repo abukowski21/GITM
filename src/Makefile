@@ -160,13 +160,20 @@ SAMI:	DEPENDSAMI
 
 ${SAMIEXE}:	${OBJECTS_SAMI}
 		${LINK.f90} -o ${SAMIEXE} ${OBJECTS_SAMI} \
-		-L${ABDIR} -lSphere \
-		-L${IEDIR} -lIE \
-		-L${LIBDIR} -lEMPIRICALUA -lINDICES -lSHARE \
+		-L${LIBDIR} -lSphere \
+		-L${LIBDIR} -lEMPIRICALIE -lEMPIRICALUA -lINDICES -lSHARE \
 		-L${GLDIR} -lGLOW ${LBLAS} \
 		-L${SAMIDIR}/src -lSAMI3 \
 		${Lflag1}
 
+${EXE}:	${OBJECTS_EXE}
+	make GITM_general
+
+GITM_general:
+	${LINK.f90} -o ${EXE} ${OBJECTS_EXE} \
+		-L${LIBDIR} -lSphere \
+		-L${LIBDIR} -lEMPIRICALIE -lEMPIRICALUA -lINDICES -lSHARE \
+		-L${GLDIR} -lGLOW ${LBLAS} ${Lflag1}
 
 POST:	PostProcess.o
 	${LINK.f90} ${Lflag2} -o PostGITM.exe PostProcess.o
