@@ -264,6 +264,8 @@ module ModInputs
   logical :: IncludeCowling = .false.
   real    :: DynamoLonAverage = 10.0
   real    :: DynamoFracPotentialCutoff = 0.0
+  real    :: DynamoPotentialScale = 1.0
+  logical :: UseGmres = .false.
   logical :: doDynamoHemisphericMirror = .true.
   logical :: doUseMagnetoPotentialBCs = .true.
   logical :: doDynamoLatBlend = .true.

@@ -1170,6 +1170,24 @@ subroutine set_inputs
           write(*, *) "TestViscosityFactor      (real)"
         endif
 
+      case ("#DYNAMOPOTENTIALSCALE")
+        call read_in_real(DynamoPotentialScale, iError)
+        if (iError /= 0) then
+          write(*, *) 'Incorrect format for #DYNAMOPOTENTIALSCALE:'
+          write(*, *) ''
+          write(*, *) '#DYNAMOPOTENTIALSCALE'
+          write(*, *) "DynamoPotentialScale      (real)"
+        endif
+
+      case ("#DYNAMOSOLVER")
+        call read_in_logical(UseGmres, iError)
+        if (iError /= 0) then
+          write(*, *) 'Incorrect format for #DYNAMOSOLVER:'
+          write(*, *) ''
+          write(*, *) '#DYNAMOSOLVER'
+          write(*, *) "UseGmres      (logical: T = gmres, F = bicgstab)"
+        endif
+
       case ("#DYNAMO")
         call read_in_logical(UseDynamo, iError)
         if (UseDynamo) then
