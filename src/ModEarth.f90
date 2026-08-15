@@ -26,10 +26,10 @@ module ModPlanet
   integer, parameter :: nSpeciesTotal = 11
 
   integer, parameter  :: iO_4SP_ = 1
-  integer, parameter  :: iHeP_ = 2
-  integer, parameter  :: iNOP_ = 3
-  integer, parameter  :: iO2P_ = 4
-  integer, parameter  :: iN2P_ = 5
+  integer, parameter  :: iNOP_ = 2
+  integer, parameter  :: iO2P_ = 3
+  integer, parameter  :: iN2P_ = 4
+  integer, parameter  :: iHeP_ = 5
   integer, parameter  :: iNP_ = 6
   integer, parameter  :: iO_2DP_ = 7
   integer, parameter  :: iO_2PP_ = 8
