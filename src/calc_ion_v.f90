@@ -97,7 +97,7 @@ subroutine calc_ion_v(iBlock)
   ! Calculate the mass density weighted collision
   ! between ions and neutrals (nu_in):
   RhoNu = 0.0
-  do iIon = 1, nIons
+  do iIon = 1, nIonsAdvect
     do iSpecies = 1, nSpecies
       RhoNu = RhoNu + &
               IDensityS(:, :, :, iIon, iBlock)*MassI(iIon)* &
