@@ -328,6 +328,10 @@ def rebin_fism(fism_waves, fism_vals, wavelengths):
     new_irr = np.zeros(nWaves)
     ave_wav = np.zeros(nWaves)
 
+    # local copy: line extraction zeroes consumed samples, and the caller's
+    # array must not be mutated
+    fism_vals = np.array(fism_vals)
+
     # first go through all of the wavelengths that are singular
     for iWave, short in enumerate(shorts):
         long = longs[iWave]
@@ -337,7 +341,7 @@ def rebin_fism(fism_waves, fism_vals, wavelengths):
             new_irr[iWave] = fism_vals[i] * \
                 (fism_waves[i+1] - fism_waves[i])
             # zero out bin so we don't double count it.
-            # fism_vals[i] = 0.0
+            fism_vals[i] = 0.0
 
     # then go through the ranges
     for iWave, short in enumerate(shorts):
