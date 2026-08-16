@@ -229,7 +229,8 @@ subroutine initialize_msis_routines
   sw_msis(2) = 0
 
   if (useMsis21) then
-     sw_msis(2) = 1
+     ! P2/P3 diagnostic: keep sw_msis(2)=0 (pre-0c011c6 behavior; zeroes all
+     ! MSIS 2.1 tides/SPW/AO/SAO/daily-geomagnetic). NOT a candidate setting.
      sw_msis4x25 = sw_msis
      call msisinit(parmpath='UA/DataIn/LowerBCs/', switch_legacy=sw_msis4x25)
   else
