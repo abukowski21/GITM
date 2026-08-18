@@ -1902,7 +1902,7 @@ subroutine calc_chemistry(iBlock)
           ! exponent, exp(-1e-8*(1e26*1e-4)**0.38) is still ~0.1, so the term
           ! needs an explicit gate on top of the column.
           if (UseNOPhotoDissGate) then
-            if (Chapman(iLon, iLat, iAlt, iO2_, iBlock) >= 0.9*ChapmanShadow) then
+            if (Chapman(iLon, iLat, iAlt, iO2_, iBlock) >= ChapmanShadowTest) then
               rr = 0.0
             else
               rr = 4.5e-6*exp(-1.e-8* &

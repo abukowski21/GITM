@@ -1254,11 +1254,16 @@ contains
     ! -----------
 
 !              rr = 8.3e-6
-    ! Mirror of calc_chemistry.Earth.f90 -- keep the two in step.  Dead for
+    ! Mirror of calc_chemistry.Earth.f90.  Hand-maintained and NOT self-
+    ! checking: the shadow threshold drifted between the two copies within one
+    ! commit of that instruction being written.  The threshold is now a single
+    ! named parameter so that token cannot drift again; everything else here
+    ! still has to be updated by hand, so diff both NO terms after touching
+    ! either.  Dead for
     ! Earth (ModChemistry only feeds ModGITMImplicit, which only Mars and
     ! Venus use), so no run member exercises this copy.
     if (UseNOPhotoDissGate) then
-      if (Chapman(iLon, iLat, iAlt, iO2_, iBlock) >= 0.5*ChapmanShadow) then
+      if (Chapman(iLon, iLat, iAlt, iO2_, iBlock) >= ChapmanShadowTest) then
         rr = 0.0
       else
         rr = 4.5e-6*exp(-1.e-8* &

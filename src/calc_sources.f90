@@ -44,6 +44,9 @@ subroutine calc_GITM_sources(iBlock)
   ! euv_ionization_heat is its only writer -- so they have to appear here too,
   ! or calc_chemistry (called unguarded below) reads an allocated-but-unassigned
   ! array.  Before those switches nothing outside the EUV path touched Chapman.
+  ! UseNightNOPhotoIon / UseNODayPhotoIonTable are deliberately absent: they
+  ! reach Chapman only through EuvIonRateS, which euv_ionization_heat has to
+  ! have run to fill at all.
   if (UseSolarHeating .or. UseIonChemistry .or. &
       UseNOPhotoDissGate .or. UseNOLyaColumn) then
 

@@ -25,6 +25,12 @@ module ModEUV
   ! chapman_integrals initializes the whole array to it and leaves it in place
   ! for every shadowed point, so a column >= this means "no sunlight here".
   real, parameter :: ChapmanShadow = 1.0e26
+  ! Test against the sentinel, not a bare literal.  This lived as a duplicated
+  ! 0.5*/0.9* in calc_chemistry.Earth.f90 and ModChemistry.Earth.f90 and drifted
+  ! between them within one commit, so there is exactly one of it now.  Real
+  ! slant columns stay below ~1e23 m^-2 even at the terminator on an 80 km
+  ! floor, so anything above this is the sentinel and nothing else.
+  real, parameter :: ChapmanShadowTest = 0.9*ChapmanShadow
 
   real, dimension(nLons, nLats, nBlocksMax) :: &
     Sza, cosSza, sinSza, AveCosSza
@@ -1548,6 +1554,10 @@ contains
     allocate(EuvIonRate(nLons, nLats, nAlts, nBlocks))
     allocate(EuvTotal(nLons, nLats, nAlts, nBlocks))
     allocate(EuvIonRateS(nLons, nLats, nAlts, nIons, nBlocks))
+    ! Only ever zeroed inside euv_ionization_heat, which is itself guarded --
+    ! so every calc_chemistry consumer read this uninitialized if that routine
+    ! did not run.  Pre-dates the NO+ consumer; closed here for all of them.
+    EuvIonRateS = 0.0
     allocate(EuvDissRateS(nLons, nLats, nAlts, nSpeciesTotal, nBlocks))
     allocate(Chapman(nLons, nLats, nAlts, nSpecies, nBlocks))
     ! Shadow value, not zero: an unwritten Chapman must read as opaque rather
@@ -1555,6 +1565,7 @@ contains
     Chapman = ChapmanShadow
     allocate(CO2_Abs_Fac(nLons, nLats, nAlts, Num_Wavelengths_High, nBlocks))
     allocate(nEuvIonRateS(nLons, nLats, nAlts, nIons, nBlocks))
+    nEuvIonRateS = 0.0
     allocate(nighteuvflux(Num_NightWaveLens, nLons, nLats, nBlocks))
     allocate(CH4PERateS(nLons, nLats, nAlts, 11, nBlocks))
     allocate(N2PERateS(nLons, nLats, nAlts, 3, nBlocks))
