@@ -21,6 +21,11 @@ module ModEUV
 
   real, allocatable :: Chapman(:, :, :, :, :)
 
+  ! Sentinel value Chapman is set to where a point is in the Earth's shadow.
+  ! chapman_integrals initializes the whole array to it and leaves it in place
+  ! for every shadowed point, so a column >= this means "no sunlight here".
+  real, parameter :: ChapmanShadow = 1.0e26
+
   real, dimension(nLons, nLats, nBlocksMax) :: &
     Sza, cosSza, sinSza, AveCosSza
 
@@ -584,6 +589,10 @@ module ModEUV
 
 !!! Add NO Photo
 
+  ! He II 304 is split across bins 44 (303.78 A) and 45 (303.31 A).  Bin 44 is
+  ! the only zero-flux bin in the 59-bin FISM row, so a cross section that sits
+  ! there alone never sees any photons.  Both bins carry it, which is how the
+  ! other species already effectively behave.
   data PhotoIon_NO/ &
     0.00, 0.00, 0.00, 0.00, 0.00, 0.00, &
     0.00, 0.00, 0.00, 0.00, 0.00, 2.e-18, &
@@ -592,7 +601,7 @@ module ModEUV
     0.00, 0.00, 0.00, 0.00, 0.00, 0.00, &
     0.00, 0.00, 0.00, 0.00, 2.4e-17, 0.00, &
     0.00, 0.00, 0.00, 0.00, 0.00, 0.00, &
-    0.00, 2.4e-17, 0.00, 0.00, 0.00, 0.00, &
+    0.00, 2.4e-17, 2.4e-17, 0.00, 0.00, 0.00, &
     0.00, 0.00, 0.00, 0.00, 0.00, 0.00, &
     0.00, 0.00, 0.00, 0.00, 0.00/
 

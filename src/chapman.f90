@@ -25,7 +25,7 @@ subroutine chapman_integrals(iBlock)
   real :: GradHs, Hg, GradXp, Xg
   real :: HpUp, HpDown
 
-  Chapman(:, :, :, :, iBlock) = 1.0e26
+  Chapman(:, :, :, :, iBlock) = ChapmanShadow
   Integrals = 0.0
   ColumnIntegralRho = 0.0
 
@@ -175,7 +175,7 @@ subroutine chapman_integrals(iBlock)
 
               ! you're within the "shadow" and so make champan huge
             else
-              chapman(iLon, iLat, iAlt, iSpecies, iBlock) = 1.0e26
+              chapman(iLon, iLat, iAlt, iSpecies, iBlock) = ChapmanShadow
 
             endif
 
