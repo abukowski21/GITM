@@ -554,6 +554,13 @@ subroutine write_code_information(dir)
     write(iCodeInfoFileUnit_, *) UseNeutralChemistry
     write(iCodeInfoFileUnit_, *) ""
 
+    write(iCodeInfoFileUnit_, *) "#NOPHOTO"
+    write(iCodeInfoFileUnit_, *) UseNOPhotoDissGate
+    write(iCodeInfoFileUnit_, *) UseNOLyaColumn
+    write(iCodeInfoFileUnit_, *) UseNightNOPhotoIon
+    write(iCodeInfoFileUnit_, *) UseNODayPhotoIonTable
+    write(iCodeInfoFileUnit_, *) ""
+
     write(iCodeInfoFileUnit_, *) "#FIXTILT"
     write(iCodeInfoFileUnit_, *) IsFixedTilt
     write(iCodeInfoFileUnit_, *) ""

@@ -271,6 +271,13 @@ module ModInputs
   logical :: doDynamoLatBlend = .true.
   logical :: doDynamoSubtractEquatorialAvg = .true.
 
+  ! #NOPHOTO -- the four NO photochemistry changes.  All default .false., so
+  ! a deck with no #NOPHOTO block runs exactly as the code did before them.
+  logical :: UseNOPhotoDissGate = .false.
+  logical :: UseNOLyaColumn = .false.
+  logical :: UseNightNOPhotoIon = .false.
+  logical :: UseNODayPhotoIonTable = .false.
+
   logical :: UseImprovedIonAdvection = .true.
   logical :: UseNighttimeIonBCs = .true.
   real :: MinTEC = 2.0

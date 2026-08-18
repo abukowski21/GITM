@@ -1188,6 +1188,26 @@ subroutine set_inputs
           write(*, *) "UseGmres      (logical: T = gmres, F = bicgstab)"
         endif
 
+      case ("#NOPHOTO")
+        call read_in_logical(UseNOPhotoDissGate, iError)
+        call read_in_logical(UseNOLyaColumn, iError)
+        call read_in_logical(UseNightNOPhotoIon, iError)
+        call read_in_logical(UseNODayPhotoIonTable, iError)
+        if (iError /= 0) then
+          write(*, *) 'Incorrect format for #NOPHOTO:'
+          write(*, *) ''
+          write(*, *) '#NOPHOTO'
+          write(*, *) "UseNOPhotoDissGate     (logical)"
+          write(*, *) "UseNOLyaColumn         (logical)"
+          write(*, *) "UseNightNOPhotoIon     (logical)"
+          write(*, *) "UseNODayPhotoIonTable  (logical)"
+        endif
+        if (UseNODayPhotoIonTable .and. .not. UseNightNOPhotoIon) then
+          write(*, *) "#NOPHOTO: UseNODayPhotoIonTable needs the plumbing that"
+          write(*, *) "UseNightNOPhotoIon installs. Night NO+ will be suppressed"
+          write(*, *) "explicitly so the day table can be isolated."
+        endif
+
       case ("#DYNAMO")
         call read_in_logical(UseDynamo, iError)
         if (UseDynamo) then
