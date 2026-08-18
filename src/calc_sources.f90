@@ -40,7 +40,12 @@ subroutine calc_GITM_sources(iBlock)
   if (iDebugLevel > 4) write(*, *) "=====> solar heating", iproc
   if (UseBarriers) call MPI_BARRIER(iCommGITM, iError)
 
-  if (UseSolarHeating .or. UseIonChemistry) then
+  ! UseNOPhotoDissGate / UseNOLyaColumn read Chapman in calc_chemistry, and
+  ! euv_ionization_heat is its only writer -- so they have to appear here too,
+  ! or calc_chemistry (called unguarded below) reads an allocated-but-unassigned
+  ! array.  Before those switches nothing outside the EUV path touched Chapman.
+  if (UseSolarHeating .or. UseIonChemistry .or. &
+      UseNOPhotoDissGate .or. UseNOLyaColumn) then
 
     ! So far, calc_physics only has stuff that is needed for solar
     ! euv, such as solar zenith angles, and local time.

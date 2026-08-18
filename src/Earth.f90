@@ -19,6 +19,13 @@ subroutine fill_photo
 
   integer :: iSpecies, iWave
 
+  ! PhotoIonFrom gates both EUV ion loops and is only assigned for the seven
+  ! ions below -- slots iNOP_ and iHP_ were read uninitialized.  Benign while
+  ! nothing consumed EuvIonRateS for those ions; not benign now that the NO+
+  ! consumer exists, and "all #NOPHOTO defaults F => bit-identical to base"
+  ! has to hold by construction rather than by .bss happening to be zero.
+  PhotoIonFrom = 0
+
   PhotoAbs = 0.0
   PhotoIon = 0.0
   PhotoDis = 0.0

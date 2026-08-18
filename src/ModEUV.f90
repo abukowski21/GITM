@@ -1550,6 +1550,9 @@ contains
     allocate(EuvIonRateS(nLons, nLats, nAlts, nIons, nBlocks))
     allocate(EuvDissRateS(nLons, nLats, nAlts, nSpeciesTotal, nBlocks))
     allocate(Chapman(nLons, nLats, nAlts, nSpecies, nBlocks))
+    ! Shadow value, not zero: an unwritten Chapman must read as opaque rather
+    ! than as "no overlying atmosphere".
+    Chapman = ChapmanShadow
     allocate(CO2_Abs_Fac(nLons, nLats, nAlts, Num_Wavelengths_High, nBlocks))
     allocate(nEuvIonRateS(nLons, nLats, nAlts, nIons, nBlocks))
     allocate(nighteuvflux(Num_NightWaveLens, nLons, nLats, nBlocks))
