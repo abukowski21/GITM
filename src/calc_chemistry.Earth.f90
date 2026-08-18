@@ -11,7 +11,8 @@ subroutine calc_chemistry(iBlock)
   use ModSources
   use ModInputs, only: &
        iDebugLevel, UseIonChemistry, UseNeutralChemistry, f107, DoCheckForNans, &
-       minIonDensity, MinIonDensityAdvect
+       minIonDensity, MinIonDensityAdvect, &
+       UseNOPhotoDissGate, UseNOLyaColumn, UseNODayPhotoIonTable
   use ModConstants
   use ieee_arithmetic
 
@@ -1419,8 +1420,19 @@ subroutine calc_chemistry(iBlock)
           NeutralLosses(iHe_) = NeutralLosses(iHe_) + Reaction
           IonSources(iHeP_) = IonSources(iHeP_) + Reaction
 
-! ----------------------------
-! NO Photoionization
+          ! ----------------------------
+          ! NO Photoionization
+          ! ----------------------------
+          ! ----------------------------------------------------------
+          ! NO + hv -> NO+ + e-
+          ! ----------------------------------------------------------
+          ! No switch guard: EuvIonRateS(:,:,:,iNOP_,:) stays zero unless
+          ! fill_photo has set PhotoIonFrom(iNOP_), so with #NOPHOTO off this
+          ! block adds nothing.
+          Reaction = EuvIonRateS(iLon, iLat, iAlt, iNOP_, iBlock)
+
+          IonSources(iNOP_) = IonSources(iNOP_) + Reaction
+          NeutralLosses(iNO_) = NeutralLosses(iNO_) + Reaction
 
 !              IonSources(iO_2PP_) = IonSources(iO_2PP_) + Reaction
 !              NeutralLosses(iO_3P_)  = NeutralLosses(iO_3P_)  + Reaction
@@ -1882,7 +1894,23 @@ subroutine calc_chemistry(iBlock)
           ! NO -> N(4S) + O
           ! -----------
 
-          rr = 4.5e-6*exp(-1.e-8*(Neutrals(iO2_)*1.e-6)**0.38)
+          ! The exponential is optical depth, so the argument wants the O2
+          ! slant column (cm-2), not the local number density.  Without the
+          ! substitution there is no SZA dependence at all and GITM
+          ! photodissociates NO at the full noon rate straight through the
+          ! night.  The shadow sentinel alone does not fix that: with the 0.38
+          ! exponent, exp(-1e-8*(1e26*1e-4)**0.38) is still ~0.1, so the term
+          ! needs an explicit gate on top of the column.
+          if (UseNOPhotoDissGate) then
+            if (Chapman(iLon, iLat, iAlt, iO2_, iBlock) >= 0.5*ChapmanShadow) then
+              rr = 0.0
+            else
+              rr = 4.5e-6*exp(-1.e-8* &
+                              (Chapman(iLon, iLat, iAlt, iO2_, iBlock)*1.e-4)**0.38)
+            endif
+          else
+            rr = 4.5e-6*exp(-1.e-8*(Neutrals(iO2_)*1.e-6)**0.38)
+          endif
 
           Reaction = &
             rr* &
@@ -2251,14 +2279,34 @@ subroutine calc_chemistry(iBlock)
 
 !              rr = 6.0e-7
 
-          rr = 5.88e-7*(1 + 0.2*(f107 - 65)/100)*exp(-2.115e-18* &
-                                                     (Neutrals(iO2_)*1.e-6)**0.8855)*szap
-          Reaction = &
-            rr* &
-            Neutrals(iNO_)
+          ! Fixed Ly-alpha proxy for NO photoionization.  UseNODayPhotoIonTable
+          ! replaces it with the real EUV table (see fill_photo and the
+          ! EuvIonRateS(iNOP_) block above), so the two must never both run.
+          if (.not. UseNODayPhotoIonTable) then
 
-          IonSources(iNOP_) = IonSources(iNOP_) + Reaction
-          NeutralLosses(iNO_) = NeutralLosses(iNO_) + Reaction
+            ! Same optical-depth argument as the photodissociation term: the
+            ! exponential wants the O2 slant column in cm-2.  With the local
+            ! number density in there the exponential is ~1 everywhere and the
+            ! trailing cos(SZA) is what puts a day/night contrast back by hand,
+            ! so the column substitution has to drop it.  No explicit shadow
+            ! gate is needed here -- at the 0.8855 exponent the sentinel column
+            ! drives the exponential to exp(-64).
+            if (UseNOLyaColumn) then
+              rr = 5.88e-7*(1 + 0.2*(f107 - 65)/100)*exp(-2.115e-18* &
+                                                         (Chapman(iLon, iLat, iAlt, iO2_, iBlock)*1.e-4)**0.8855)
+            else
+              rr = 5.88e-7*(1 + 0.2*(f107 - 65)/100)*exp(-2.115e-18* &
+                                                         (Neutrals(iO2_)*1.e-6)**0.8855)*szap
+            endif
+
+            Reaction = &
+              rr* &
+              Neutrals(iNO_)
+
+            IonSources(iNOP_) = IonSources(iNOP_) + Reaction
+            NeutralLosses(iNO_) = NeutralLosses(iNO_) + Reaction
+
+          endif
 
           !---- Ions
 

@@ -13,6 +13,7 @@ subroutine fill_photo
 
   use ModPlanet
   use ModEUV
+  use ModInputs, only: UseNightNOPhotoIon, UseNODayPhotoIonTable
 
   implicit none
 
@@ -120,6 +121,19 @@ subroutine fill_photo
   night_photoabs(:, iNO_) = Night_PhotoAbs_NO*1.e-4
   night_photoabs(:, iO_3P_) = Night_PhotoAbs_O*1.e-4
   night_photoabs(:, iN_4S_) = Night_PhotoAbs_N*1.e-4
+
+  ! #NOPHOTO.  PhotoIonFrom(iNOP_) gates both the day loop (calc_euv:74) and
+  ! the night loop (calc_euv:372), so it has to be set for either source.
+  ! The photoabs(:, iNO_) row is deliberately left alone: filling it would
+  ! make NO a daytime absorber for the first time, which is a separate change,
+  ! and PhotoAbs_NO has no data statement to fill it from.
+  if (UseNightNOPhotoIon .or. UseNODayPhotoIonTable) PhotoIonFrom(iNOP_) = iNO_
+  if (UseNODayPhotoIonTable) photoion(:, iNOP_) = PhotoIon_NO*1.e-4
+  ! Day table without the night source: suppress night NO+ explicitly, so the
+  ! day switch does not silently drag the night channel in with it.  Must come
+  ! after night_photoion(:, iNOP_) is filled above.
+  if (UseNODayPhotoIonTable .and. .not. UseNightNOPhotoIon) &
+    night_photoion(:, iNOP_) = 0.0
 
 end subroutine fill_photo
 

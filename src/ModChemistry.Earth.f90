@@ -8,7 +8,8 @@ Module ModChemistry
   use ModPlanet
   use ModRates
   use ModEUV
-  use ModInputs, only: iDebugLevel, UseIonChemistry, UseNeutralChemistry, f107, f107a
+  use ModInputs, only: iDebugLevel, UseIonChemistry, UseNeutralChemistry, f107, f107a, &
+                       UseNOPhotoDissGate, UseNOLyaColumn
   use ModConstants
   use ModSources, only: ChemicalHeatingS, IonPrecipIonRates, AuroralIonRates
 
@@ -1253,7 +1254,19 @@ contains
     ! -----------
 
 !              rr = 8.3e-6
-    rr = 4.5e-6*exp(-1.e-8*(Neutrals(iO2_)*1.e-6)**0.38)
+    ! Mirror of calc_chemistry.Earth.f90 -- keep the two in step.  Dead for
+    ! Earth (ModChemistry only feeds ModGITMImplicit, which only Mars and
+    ! Venus use), so no run member exercises this copy.
+    if (UseNOPhotoDissGate) then
+      if (Chapman(iLon, iLat, iAlt, iO2_, iBlock) >= 0.5*ChapmanShadow) then
+        rr = 0.0
+      else
+        rr = 4.5e-6*exp(-1.e-8* &
+                        (Chapman(iLon, iLat, iAlt, iO2_, iBlock)*1.e-4)**0.38)
+      endif
+    else
+      rr = 4.5e-6*exp(-1.e-8*(Neutrals(iO2_)*1.e-6)**0.38)
+    endif
 
     Reaction = &
       rr* &
@@ -1521,8 +1534,16 @@ contains
 
 !              rr = 6.0e-7
 
-    rr = 5.88e-7*(1 + 0.2*(f107 - 65)/100)*exp(-2.115e-18* &
-                                               (Neutrals(iO2_)*1.e-6)**0.8855)
+    ! Mirror of calc_chemistry.Earth.f90, same caveat as above.  Note this copy
+    ! has never carried the cos(SZA) factor its calc_chemistry twin has, so the
+    ! two were already divergent before the column substitution.
+    if (UseNOLyaColumn) then
+      rr = 5.88e-7*(1 + 0.2*(f107 - 65)/100)*exp(-2.115e-18* &
+                                                 (Chapman(iLon, iLat, iAlt, iO2_, iBlock)*1.e-4)**0.8855)
+    else
+      rr = 5.88e-7*(1 + 0.2*(f107 - 65)/100)*exp(-2.115e-18* &
+                                                 (Neutrals(iO2_)*1.e-6)**0.8855)
+    endif
 
     Reaction = &
       rr* &
