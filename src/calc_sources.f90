@@ -40,15 +40,16 @@ subroutine calc_GITM_sources(iBlock)
   if (iDebugLevel > 4) write(*, *) "=====> solar heating", iproc
   if (UseBarriers) call MPI_BARRIER(iCommGITM, iError)
 
-  ! UseNOPhotoDissGate / UseNOLyaColumn read Chapman in calc_chemistry, and
-  ! euv_ionization_heat is its only writer -- so they have to appear here too,
-  ! or calc_chemistry (called unguarded below) reads an allocated-but-unassigned
-  ! array.  Before those switches nothing outside the EUV path touched Chapman.
-  ! UseNightNOPhotoIon / UseNODayPhotoIonTable are deliberately absent: they
-  ! reach Chapman only through EuvIonRateS, which euv_ionization_heat has to
-  ! have run to fill at all.
-  if (UseSolarHeating .or. UseIonChemistry .or. &
-      UseNOPhotoDissGate .or. UseNOLyaColumn) then
+  ! euv_ionization_heat is the only writer of Chapman / EuvIonRateS /
+  ! EuvDissRateS, and calc_chemistry reads all three -- but it needs no extra
+  ! condition here.  Every consumer sits behind `if (.not. UseIonChemistry)
+  ! return` (calc_chemistry.Earth.f90:103, ModChemistry.Earth.f90:87,
+  ! ModChemistry.Mars.f90:172), and UseIonChemistry is already a disjunct below,
+  ! so this call always precedes any of those reads.  The #NOPHOTO switches
+  ! change nothing about that.  Noted because it is not obvious three call
+  ! frames apart, and a widened guard was briefly added here on the assumption
+  ! it was.
+  if (UseSolarHeating .or. UseIonChemistry) then
 
     ! So far, calc_physics only has stuff that is needed for solar
     ! euv, such as solar zenith angles, and local time.

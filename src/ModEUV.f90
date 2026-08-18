@@ -1554,17 +1554,25 @@ contains
     allocate(EuvIonRate(nLons, nLats, nAlts, nBlocks))
     allocate(EuvTotal(nLons, nLats, nAlts, nBlocks))
     allocate(EuvIonRateS(nLons, nLats, nAlts, nIons, nBlocks))
-    ! Only ever zeroed inside euv_ionization_heat, which is itself guarded --
-    ! so every calc_chemistry consumer read this uninitialized if that routine
-    ! did not run.  Pre-dates the NO+ consumer; closed here for all of them.
+    ! These three are zeroed per-block inside euv_ionization_heat.  On Earth
+    ! that always precedes any read (see the note in calc_sources.f90), so the
+    ! initialisation below is defence in depth rather than a fix -- with one
+    ! exception, nEuvIonRateS, which is a real bug: see its allocation.
     EuvIonRateS = 0.0
     allocate(EuvDissRateS(nLons, nLats, nAlts, nSpeciesTotal, nBlocks))
+    EuvDissRateS = 0.0
     allocate(Chapman(nLons, nLats, nAlts, nSpecies, nBlocks))
     ! Shadow value, not zero: an unwritten Chapman must read as opaque rather
     ! than as "no overlying atmosphere".
     Chapman = ChapmanShadow
     allocate(CO2_Abs_Fac(nLons, nLats, nAlts, Num_Wavelengths_High, nBlocks))
     allocate(nEuvIonRateS(nLons, nLats, nAlts, nIons, nBlocks))
+    ! REACHABLE BUG, all planets but Earth.  nEuvIonRateS is zeroed only inside
+    ! night_euv_ionization (calc_euv.f90:275), which is called `if (IsEarth)` at
+    ! :120 -- while `EuvIonRateS = EuvIonRateS + nEuvIonRateS` at :122 is
+    ! unconditional.  So Mars, Venus and Titan have been summing uninitialised
+    ! memory into their ion production rates every step.  This zeroing is the
+    ! fix; do not remove it as redundant.
     nEuvIonRateS = 0.0
     allocate(nighteuvflux(Num_NightWaveLens, nLons, nLats, nBlocks))
     allocate(CH4PERateS(nLons, nLats, nAlts, 11, nBlocks))
