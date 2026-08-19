@@ -328,20 +328,22 @@ def rebin_fism(fism_waves, fism_vals, wavelengths):
     new_irr = np.zeros(nWaves)
     ave_wav = np.zeros(nWaves)
 
-    # local copy: line extraction zeroes consumed samples, and the caller's
-    # array must not be mutated
-    fism_vals = np.array(fism_vals)
+    # Create two copies of fism_vals. One for lines, one for bins.
+    # Two lines (Si XI 303.31/He II 303.78) are so close together that
+    # they share FISM bins. Each for loop reads from its own copy.
+    fism_vals_lines = np.array(fism_vals)
+    fism_vals_ranges = np.array(fism_vals)
 
-    # first go through all of the wavelengths that are singular
+    # first go through all of the wavelengths that are singular (lines)
     for iWave, short in enumerate(shorts):
         long = longs[iWave]
         if (long == short):
             d = np.abs(fism_waves - short)
             i = np.argmin(d)
-            new_irr[iWave] = fism_vals[i] * \
+            new_irr[iWave] = fism_vals_lines[i] * \
                 (fism_waves[i+1] - fism_waves[i])
             # zero out bin so we don't double count it.
-            fism_vals[i] = 0.0
+            fism_vals_ranges[i] = 0.0
 
     # then go through the ranges
     for iWave, short in enumerate(shorts):
@@ -354,116 +356,119 @@ def rebin_fism(fism_waves, fism_vals, wavelengths):
             iEnd = np.argmin(d)
             wave_int = 0.0
             for i in range(iStart+1, iEnd+1):
-                new_irr[iWave] += fism_vals[i] * \
+                new_irr[iWave] += fism_vals_ranges[i] * \
                     (fism_waves[i+1] - fism_waves[i])
                 wave_int += (fism_waves[i+1] - fism_waves[i])
+
     return new_irr, ave_wav
+
 
 #------------------------------------------------------------------------------
 # main code:
 #------------------------------------------------------------------------------
 
-args = parse_args_fism()
+if __name__ == "__main__":
+    args = parse_args_fism()
 
-if (args.fismfile == 'none'):
+    if (args.fismfile == 'none'):
 
-    if (args.start == '0'):
-        print('Need to specify -start time! Use -h for help!')
-        exit()
-    
-    start = convert_ymdhm_to_dt(args.start)
-
-    if (args.flare):
-        print('*** Downloading Flare data - Can only get 24 hours of data! ***')
-        end = start + dt.timedelta(days = 1)
-    else:
-        if (args.end == '0'):
-            print('Need to specify -end time! Use -h for help!')
+        if (args.start == '0'):
+            print('Need to specify -start time! Use -h for help!')
             exit()
-        end = convert_ymdhm_to_dt(args.end)
+        
+        start = convert_ymdhm_to_dt(args.start)
 
-    fism_file = download_fism2(start, end, args.flare)
+        if (args.flare):
+            print('*** Downloading Flare data - Can only get 24 hours of data! ***')
+            end = start + dt.timedelta(days = 1)
+        else:
+            if (args.end == '0'):
+                print('Need to specify -end time! Use -h for help!')
+                exit()
+            end = convert_ymdhm_to_dt(args.end)
 
-else:
-    fism_file = args.fismfile
+        fism_file = download_fism2(start, end, args.flare)
 
-fism = read_fism_csv_file(fism_file)
-wavelengths = read_euv_csv_file(args.euvfile)
+    else:
+        fism_file = args.fismfile
 
-nWaves = len(wavelengths['short'])
+    fism = read_fism_csv_file(fism_file)
+    wavelengths = read_euv_csv_file(args.euvfile)
 
-filetime = fism["time"][0].strftime('fism%Y%m')
-filestart = filetime+'_nWaves_%03d' % nWaves
+    nWaves = len(wavelengths['short'])
 
-fig = plt.figure(figsize = (10,10))
-ax = fig.add_subplot()
+    filetime = fism["time"][0].strftime('fism%Y%m')
+    filestart = filetime+'_nWaves_%03d' % nWaves
 
-if (args.gitm):
-    fileout = filestart + '_gitm.dat'
-else:
-    fileout = filestart + '.dat'
-    
-fp = open(fileout, 'wb')
-
-if (args.gitm):
-    fp.write('#START\n'.encode())
-
-else:
-
-    shortline = ' 0000 00 00 00 00 00 '
-    for short in wavelengths['short']:
-        shortline = shortline + "%8.1f" % short
-    shortline = shortline + '\n'
-    fp.write(shortline.encode())
-
-    longline = ' 0000 00 00 00 00 00 '
-    for long in wavelengths['long']:
-        longline = longline + "%8.1f" % long
-    longline = longline + '\n'
-    fp.write(longline.encode())
-
-for iTime, time in enumerate(fism['time']):
-    new_irr, ave_wav = rebin_fism(fism['wave'], fism['irr'][iTime], wavelengths)
+    fig = plt.figure(figsize = (10,10))
+    ax = fig.add_subplot()
 
     if (args.gitm):
-        ave_wav = np.flip(ave_wav)
-        new_irr = np.flip(new_irr)
-    ax.scatter(ave_wav, np.log10(new_irr))
+        fileout = filestart + '_gitm.dat'
+    else:
+        fileout = filestart + '.dat'
+        
+    fp = open(fileout, 'wb')
 
-    sTime = time.strftime(' %Y %m %d %H %M %S')
-    sData = ' '
-    for irr in new_irr:
-        sData = sData + "%15.8e" % irr
-    line = sTime + sData + '\n'
-    fp.write(line.encode())
+    if (args.gitm):
+        fp.write('#START\n'.encode())
 
-fp.close()
+    else:
 
-f107Data = read_ap107_file(local_file = "apf107_temp.txt")
-if (len(f107Data['times']) > 0):
-    iMid = int(len(fism['time'])/2)
-    tMid = fism['time'][iMid]
-    tLower = tMid - dt.timedelta(days = 40)
-    tUpper = tMid + dt.timedelta(days = 40)
+        shortline = ' 0000 00 00 00 00 00 '
+        for short in wavelengths['short']:
+            shortline = shortline + "%8.1f" % short
+        shortline = shortline + '\n'
+        fp.write(shortline.encode())
 
-    iLower = find_index_from_time(f107Data, tLower)
-    iMid = find_index_from_time(f107Data, tMid)
-    iUpper = find_index_from_time(f107Data, tUpper)
+        longline = ' 0000 00 00 00 00 00 '
+        for long in wavelengths['long']:
+            longline = longline + "%8.1f" % long
+        longline = longline + '\n'
+        fp.write(longline.encode())
 
-    f107 = f107Data['f107'][iMid]
-    f107a = np.mean(f107Data['f107'][iLower:iUpper+1])
+    for iTime, time in enumerate(fism['time']):
+        new_irr, ave_wav = rebin_fism(fism['wave'], fism['irr'][iTime], wavelengths)
 
-    euvac = calc_euvac(wavelengths, f107, f107a)
+        if (args.gitm):
+            ave_wav = np.flip(ave_wav)
+            new_irr = np.flip(new_irr)
+        ax.scatter(ave_wav, np.log10(new_irr))
 
-    if (len(euvac) > 0):
-        ave_wave = (wavelengths['long'] + wavelengths['short'])/2.0
-        ax.plot(ave_wave, np.log10(euvac), label = 'EUVAC')
-        ax.legend()
+        sTime = time.strftime(' %Y %m %d %H %M %S')
+        sData = ' '
+        for irr in new_irr:
+            sData = sData + "%15.8e" % irr
+        line = sTime + sData + '\n'
+        fp.write(line.encode())
 
-ax.set_xlabel('Wavelength (nm)')
-ax.set_ylabel('log(W/m2)')
+    fp.close()
 
-plotfile = filestart + '.png'
-print('writing : ',plotfile)    
-fig.savefig(plotfile)
-plt.close()
+    f107Data = read_ap107_file(local_file = "apf107_temp.txt")
+    if (len(f107Data['times']) > 0):
+        iMid = int(len(fism['time'])/2)
+        tMid = fism['time'][iMid]
+        tLower = tMid - dt.timedelta(days = 40)
+        tUpper = tMid + dt.timedelta(days = 40)
+
+        iLower = find_index_from_time(f107Data, tLower)
+        iMid = find_index_from_time(f107Data, tMid)
+        iUpper = find_index_from_time(f107Data, tUpper)
+
+        f107 = f107Data['f107'][iMid]
+        f107a = np.mean(f107Data['f107'][iLower:iUpper+1])
+
+        euvac = calc_euvac(wavelengths, f107, f107a)
+
+        if (len(euvac) > 0):
+            ave_wave = (wavelengths['long'] + wavelengths['short'])/2.0
+            ax.plot(ave_wave, np.log10(euvac), label = 'EUVAC')
+            ax.legend()
+
+    ax.set_xlabel('Wavelength (nm)')
+    ax.set_ylabel('log(W/m2)')
+
+    plotfile = filestart + '.png'
+    print('writing : ',plotfile)    
+    fig.savefig(plotfile)
+    plt.close()
