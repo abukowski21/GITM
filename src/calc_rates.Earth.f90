@@ -130,7 +130,16 @@ subroutine calc_collisions(iBlock)
     NDensityS(:, :, :, iN_2P_, iBlock) + &
     NDensityS(:, :, :, iN_2D_, iBlock)
 
-  ! We include O+, O2+, NO+ below
+  ! Sum over the advected ions: slots 1..nIonsAdvect of the ModPlanet ion
+  ! list, whatever those slots happen to hold. This comment used to name
+  ! {O+, O2+, NO+}, which has not been the realised set since He+ moved into
+  ! slot 2 -- at nIonsAdvect = 2 it is {O+, He+} here and {O+, NO+} on
+  ! develop. Read the set off the "Ion Species" list in run_information.txt
+  ! together with nIonsAdvect; do not assume it from the count.
+  ! NeMajor is dead code -- every consumer (the Frac lines further down) is
+  ! commented out -- so the bound is left alone rather than guessed at. If a
+  ! consumer is ever restored, decide then whether "major" means the advected
+  ! prefix or an explicit species list.
   NeMajor = 0.0
   do iSpecies = 1, nIonsAdvect
     NeMajor = NeMajor + IDensityS(:, :, :, iSpecies, iBlock)
