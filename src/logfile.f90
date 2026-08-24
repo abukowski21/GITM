@@ -155,6 +155,11 @@ subroutine logfile(dir)
       " Neutral Drag: ", useNeutralDrag
     write(iLogFileUnit_, '(3(a,L2))') "# Viscosity: ", useViscosity, &
       " Coriolis: ", useCoriolis, " Gravity: ", useGravity
+    ! Written on its own line, not appended to the one above, so that anything
+    ! already parsing "# Viscosity: " keeps working.  The flag there does not
+    ! gate viscosity; this factor is what sets its magnitude.
+    write(iLogFileUnit_, '(a,f9.4)') "# Test Viscosity Factor: ", &
+      TestViscosityFactor
     write(iLogFileUnit_, '(3(a,L2))') "# Ion Chemistry: ", useIonChemistry, &
       " Ion Advection: ", useIonAdvection, " Neutral Chemistry: ", &
       useNeutralChemistry
@@ -423,6 +428,15 @@ subroutine write_code_information(dir)
     write(iCodeInfoFileUnit_, *) UseViscosity
     write(iCodeInfoFileUnit_, *) UseCoriolis
     write(iCodeInfoFileUnit_, *) UseGravity
+    write(iCodeInfoFileUnit_, *) ""
+
+    ! UseViscosity above is only the flag, and it does NOT gate the viscosity:
+    ! advance_vertical.f90 calls calc_viscosity unconditionally.  The magnitude
+    ! lives here -- TestViscosityFactor scales ViscCoef/ViscCoefS in
+    ! calc_rates.Earth.f90.  Without this block the factor appears in no output
+    ! file at all and a run's viscosity setting is unrecoverable after the fact.
+    write(iCodeInfoFileUnit_, *) "#USETESTVISCOSITY"
+    write(iCodeInfoFileUnit_, *) TestViscosityFactor
     write(iCodeInfoFileUnit_, *) ""
 
     write(iCodeInfoFileUnit_, *) "#APEX"
