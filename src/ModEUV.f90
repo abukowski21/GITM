@@ -20,17 +20,8 @@ module ModEUV
   real, allocatable :: EuvDissRateS(:, :, :, :, :)
 
   real, allocatable :: Chapman(:, :, :, :, :)
-
-  ! Sentinel value Chapman is set to where a point is in the Earth's shadow.
-  ! chapman_integrals initializes the whole array to it and leaves it in place
-  ! for every shadowed point, so a column >= this means "no sunlight here".
-  real, parameter :: ChapmanShadow = 1.0e26
-  ! Test against the sentinel, not a bare literal.  This lived as a duplicated
-  ! 0.5*/0.9* in calc_chemistry.Earth.f90 and ModChemistry.Earth.f90 and drifted
-  ! between them within one commit, so there is exactly one of it now.  Real
-  ! slant columns stay below ~1e23 m^-2 even at the terminator on an 80 km
-  ! floor, so anything above this is the sentinel and nothing else.
-  real, parameter :: ChapmanShadowTest = 0.9*ChapmanShadow
+  ! Defines when we are in the "shadow"
+  real:: ChapmanShadow = 1.0e26
 
   real, dimension(nLons, nLats, nBlocksMax) :: &
     Sza, cosSza, sinSza, AveCosSza
