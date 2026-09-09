@@ -1415,6 +1415,12 @@ subroutine calc_chemistry(iBlock)
           NeutralLosses(iHe_) = NeutralLosses(iHe_) + Reaction
           IonSources(iHeP_) = IonSources(iHeP_) + Reaction
 
+          ! Aurora: He's share of the Fang bulk ionisation (see aurora.Earth.f90)
+          Reaction = AuroralIonRateS(iLon, iLat, iAlt, iHe_, iBlock)
+
+          NeutralLosses(iHe_) = NeutralLosses(iHe_) + Reaction
+          IonSources(iHeP_) = IonSources(iHeP_) + Reaction
+
           ! ----------------------------
           ! NO Photoionization
           ! ----------------------------

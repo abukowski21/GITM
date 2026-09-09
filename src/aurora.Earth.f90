@@ -157,11 +157,22 @@ subroutine aurora(iBlock)
     enddo
   enddo
 
-  ! From Rees's book:
+  ! From Rees's book (N2 0.92, O2 1.00, O 0.56).  He and H are added to the
+  ! partition: the Fang bulk rate is built from the TOTAL mass column, which
+  ! includes He, so leaving He out of the denominator hands the whole bulk
+  ! rate to O wherever He dominates (the winter polar cap above ~1000 km).
+  ! There the O ionisation became a volume rate independent of [O] -- a loss
+  ! frequency growing as 1/[O] -- which drained the top cell to zero.
+  ! Weights are ratios of peak electron-impact ionisation cross-sections
+  ! (~100 eV) to O2's: He ~0.37/2.7 = 0.14, H ~0.6/2.7 = 0.23.  H is not an
+  ! advected species and H+ has no auroral chemistry path, so H only takes
+  ! its share out of the denominator; He's share goes to He+ in the chemistry.
 
   temp = 0.92*NDensityS(1:nLons, 1:nLats, 1:nAlts, iN2_, iBlock) + &
          1.00*NDensityS(1:nLons, 1:nLats, 1:nAlts, iO2_, iBlock) + &
-         0.56*NDensityS(1:nLons, 1:nLats, 1:nAlts, iO_3P_, iBlock)
+         0.56*NDensityS(1:nLons, 1:nLats, 1:nAlts, iO_3P_, iBlock) + &
+         0.14*NDensityS(1:nLons, 1:nLats, 1:nAlts, iHe_, iBlock) + &
+         0.23*NDensityS(1:nLons, 1:nLats, 1:nAlts, iH_, iBlock)
 
   AuroralIonRateS(:, :, :, iO_3P_, iBlock) = &
     0.56*AuroralBulkIonRate* &
@@ -172,6 +183,9 @@ subroutine aurora(iBlock)
   AuroralIonRateS(:, :, :, iN2_, iBlock) = &
     0.92*AuroralBulkIonRate* &
     NDensityS(1:nLons, 1:nLats, 1:nAlts, iN2_, iBlock)/temp
+  AuroralIonRateS(:, :, :, iHe_, iBlock) = &
+    0.14*AuroralBulkIonRate* &
+    NDensityS(1:nLons, 1:nLats, 1:nAlts, iHe_, iBlock)/temp
 
   IsFirstTime(iBlock) = .false.
 
