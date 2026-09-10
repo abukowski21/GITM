@@ -308,6 +308,15 @@ module ModInputs
   real :: PhotoElectronHeatingEfficiency = 0.0
   real :: NeutralHeatingEfficiency = 0.05
 
+  ! F10.7a-dependent scalings (2026-09, tuning campaign): each factor is
+  ! base + slope*(F107a - ref), F107a the driven 81-day mean at the current
+  ! time.  Defaults reproduce the unscaled code bit for bit.
+  real :: EuvScaleBase = 1.0
+  real :: EuvScaleSlope = 0.0
+  real :: EuvScaleF107aRef = 150.0
+  real :: NeutralHeatingSlope = 0.0
+  real :: NeutralHeatingF107aRef = 150.0
+
   real :: KappaTemp0 = 5.6e-4
   real :: ThermalConduction_AO2 = 3.6e-4
   real :: ThermalConduction_AO = 5.6e-4

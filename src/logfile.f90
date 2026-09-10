@@ -409,6 +409,17 @@ subroutine write_code_information(dir)
     write(iCodeInfoFileUnit_, *) NeutralHeatingEfficiency
     write(iCodeInfoFileUnit_, *) ""
 
+    write(iCodeInfoFileUnit_, *) "#NEUTRALHEATINGSLOPE"
+    write(iCodeInfoFileUnit_, *) NeutralHeatingSlope
+    write(iCodeInfoFileUnit_, *) NeutralHeatingF107aRef
+    write(iCodeInfoFileUnit_, *) ""
+
+    write(iCodeInfoFileUnit_, *) "#EUVSCALE"
+    write(iCodeInfoFileUnit_, *) EuvScaleBase
+    write(iCodeInfoFileUnit_, *) EuvScaleSlope
+    write(iCodeInfoFileUnit_, *) EuvScaleF107aRef
+    write(iCodeInfoFileUnit_, *) ""
+
     write(iCodeInfoFileUnit_, *) "#CFL"
     write(iCodeInfoFileUnit_, *) cfl
     write(iCodeInfoFileUnit_, *) ""

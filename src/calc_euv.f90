@@ -465,7 +465,7 @@ subroutine calc_scaled_euv
   use ModInputs
   use ModTime
   use ModIndicesInterfaces
-  use ModGITM, only: dt
+  use ModGITM, only: dt, nBlocks
   implicit none
 
   integer, parameter :: Hinteregger_Contrast_Ratio = 0
@@ -476,6 +476,7 @@ subroutine calc_scaled_euv
 
   integer :: N, NN, iMin(1) = 0, iError
   real    :: f107_Ratio, r1, r2, hlybr, fexvir, hlya, heiew
+  real    :: EuvScale
   real    :: xuvfac, hlymod, heimod, xuvf
   real(Real8_) :: rtime
   integer, dimension(7) :: Time_Array
@@ -751,6 +752,20 @@ subroutine calc_scaled_euv
        (EUV_Ratio_Empirical * Empirical_Flux + &
        (1.0 - EUV_Ratio_Empirical) * FISM_Flux) / &
        (SunPlanetDistance**2)
+
+  ! F10.7a-dependent flat scaling of the whole spectrum (#EUVSCALE;
+  ! defaults 1.0 / 0.0 leave the flux untouched):
+  EuvScale = max(0.0, EuvScaleBase + EuvScaleSlope*(f107a - EuvScaleF107aRef))
+  Flux_of_EUV = Flux_of_EUV*EuvScale
+
+  ! F10.7a-dependent neutral heating efficiency (#NEUTRALHEATINGSLOPE);
+  ! init_heating_efficiency set the array uniform to NeutralHeatingEfficiency,
+  ! so with a zero slope it is never touched here:
+  if (NeutralHeatingSlope /= 0.0) then
+     HeatingEfficiency_CB(:, :, :, 1:nBlocks) = max(0.0, &
+          NeutralHeatingEfficiency + &
+          NeutralHeatingSlope*(f107a - NeutralHeatingF107aRef))
+  endif
 
   TotalIntegratedEuvEnergy = 0.0
   do N = 1, Num_WaveLengths_High

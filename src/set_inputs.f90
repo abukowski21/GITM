@@ -997,6 +997,32 @@ subroutine set_inputs
           IsDone = .true.
         endif
 
+      case ("#EUVSCALE")
+        call read_in_real(EuvScaleBase, iError)
+        call read_in_real(EuvScaleSlope, iError)
+        call read_in_real(EuvScaleF107aRef, iError)
+        if (iError /= 0) then
+          write(*, *) 'Incorrect format for #EUVSCALE:'
+          write(*, *) ''
+          write(*, *) '#EUVSCALE'
+          write(*, *) "EuvScaleBase       (real) flat multiplier on the whole EUV spectrum at F107a = ref"
+          write(*, *) "EuvScaleSlope      (real) change in the multiplier per unit F107a"
+          write(*, *) "EuvScaleF107aRef   (real) reference F107a"
+          IsDone = .true.
+        endif
+
+      case ("#NEUTRALHEATINGSLOPE")
+        call read_in_real(NeutralHeatingSlope, iError)
+        call read_in_real(NeutralHeatingF107aRef, iError)
+        if (iError /= 0) then
+          write(*, *) 'Incorrect format for #NEUTRALHEATINGSLOPE:'
+          write(*, *) ''
+          write(*, *) '#NEUTRALHEATINGSLOPE'
+          write(*, *) "NeutralHeatingSlope      (real) change in NeutralHeatingEfficiency per unit F107a"
+          write(*, *) "NeutralHeatingF107aRef   (real) reference F107a"
+          IsDone = .true.
+        endif
+
       case ("#DON4SHACK")
         call read_in_logical(DoN4SHack, iError)
         if (iError /= 0) then
