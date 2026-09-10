@@ -251,8 +251,9 @@ subroutine calc_planet_sources(iBlock)
     ! The factor of 2 the comment above calls for (Roble 1987 non-LTE
     ! correction) was never applied on the Earth path; Mars, Venus and
     ! TIE-GCM apply it.  Measured (sweep AA, 2026-09): +0.19-0.24 ln in
-    ! 440-520 km density, ionosphere-inert.
-    OCooling = OCooling*0.5
+    ! 440-520 km density, ionosphere-inert.  Default 0.5; #OCOOLINGFACTOR
+    ! sets it (1.0 reproduces the pre-2026-09 rate).
+    OCooling = OCooling*OCoolingNonLTEFactor
 
     OCooling2d = 0.0
     do iAlt = 1, nAlts

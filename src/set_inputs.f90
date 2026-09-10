@@ -1011,6 +1011,16 @@ subroutine set_inputs
           IsDone = .true.
         endif
 
+      case ("#OCOOLINGFACTOR")
+        call read_in_real(OCoolingNonLTEFactor, iError)
+        if (iError /= 0) then
+          write(*, *) 'Incorrect format for #OCOOLINGFACTOR:'
+          write(*, *) ''
+          write(*, *) '#OCOOLINGFACTOR'
+          write(*, *) "OCoolingNonLTEFactor   (real) multiplier on the Bates O 63 um LTE rate; 0.5 = Roble 1987"
+          IsDone = .true.
+        endif
+
       case ("#NEUTRALHEATINGSLOPE")
         call read_in_real(NeutralHeatingSlope, iError)
         call read_in_real(NeutralHeatingF107aRef, iError)

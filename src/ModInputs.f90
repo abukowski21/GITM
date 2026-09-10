@@ -285,6 +285,8 @@ module ModInputs
   logical :: UseJouleHeating = .true.
   logical :: UseNOCooling = .true.
   logical :: UseOCooling = .true.
+  ! Roble (1987) non-LTE correction to the Bates O 63 um LTE rate (#OCOOLINGFACTOR)
+  real :: OCoolingNonLTEFactor = 0.5
   logical :: UseConduction = .true.
   logical :: UseTurbulentCond = .true.
   logical :: UseIRHeating = .false.
