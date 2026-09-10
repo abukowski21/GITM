@@ -163,16 +163,18 @@ subroutine aurora(iBlock)
   ! rate to O wherever He dominates (the winter polar cap above ~1000 km).
   ! There the O ionisation became a volume rate independent of [O] -- a loss
   ! frequency growing as 1/[O] -- which drained the top cell to zero.
-  ! Weights are ratios of peak electron-impact ionisation cross-sections
-  ! (~100 eV) to O2's: He ~0.37/2.7 = 0.14, H ~0.6/2.7 = 0.23.  H is not an
-  ! advected species and H+ has no auroral chemistry path, so H only takes
-  ! its share out of the denominator; He's share goes to He+ in the chemistry.
+  ! Weight is the ratio of He's peak electron-impact ionisation cross-section
+  ! (~100 eV) to O2's, ~0.37/2.7 = 0.14; He's share goes to He+ in the
+  ! chemistry.  H is deliberately NOT in the denominator: it is outside
+  ! nSpecies, so it is absent from the column mass the bulk rate is built
+  ! from (chapman.f90, calc_rates), it is a static field in the Earth build,
+  ! and nothing could receive its share -- an H term here only deletes
+  ! ionisation (measured 9-17% of He's share in the winter-cap top cell).
 
   temp = 0.92*NDensityS(1:nLons, 1:nLats, 1:nAlts, iN2_, iBlock) + &
          1.00*NDensityS(1:nLons, 1:nLats, 1:nAlts, iO2_, iBlock) + &
          0.56*NDensityS(1:nLons, 1:nLats, 1:nAlts, iO_3P_, iBlock) + &
-         0.14*NDensityS(1:nLons, 1:nLats, 1:nAlts, iHe_, iBlock) + &
-         0.23*NDensityS(1:nLons, 1:nLats, 1:nAlts, iH_, iBlock)
+         0.14*NDensityS(1:nLons, 1:nLats, 1:nAlts, iHe_, iBlock)
 
   AuroralIonRateS(:, :, :, iO_3P_, iBlock) = &
     0.56*AuroralBulkIonRate* &
